@@ -5,8 +5,14 @@ import streamlit as st
 
 load_dotenv()
 
-api_key = st.secrets.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
+api_key = os.getenv("GROQ_API_KEY")
 
+if not api_key:
+    try:
+        api_key = st.secrets["GROQ_API_KEY"]
+    except:
+        api_key = None
+        
 st.set_page_config(page_title="Groq AI Chatbot",page_icon="🦕")
 st.title("🦕 Groq AI Assistant with Memory")
 
