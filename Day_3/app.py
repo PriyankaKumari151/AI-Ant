@@ -12,7 +12,7 @@ if not api_key:
         api_key = st.secrets["GROQ_API_KEY"]
     except:
         api_key = None
-        
+
 st.set_page_config(page_title="Groq AI Chatbot",page_icon="🦕")
 st.title("🦕 Groq AI Assistant with Memory")
 
@@ -31,6 +31,25 @@ if "messages" not in st.session_state:
         }
     ]
 
+# Add this side bar button to clear chat history
+with st.sidebar:
+    st.header("Settings")
+    if st.button("🗑️ Clear Chat History"):
+        st.session_state.messages = [
+            {
+                "role":"system",
+                "content": "You are a helpful assistant."
+            }
+        ]
+        st.rerun()
+    temp = st.slider(
+        label="Model Temperature",
+        min_value=0.0,
+        max_value=1.0,
+        value=0.0,
+        step=0.05,
+        )
+
 #3. Render previous messages in the chat UI
 for message in st.session_state.messages:
     if message["role"]!="system":
@@ -48,7 +67,7 @@ if prompt := st.chat_input("Ask a question..."):
         with st.spinner("Thinking..."):
             response = client.chat.completions.create(
                 model="openai/gpt-oss-120b",
-                temperature=0.0,
+                temperature=temp,
                 messages=st.session_state.messages,
             )
             reply = response.choices[0].message.content
