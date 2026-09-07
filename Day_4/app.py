@@ -1,6 +1,6 @@
 import os
 import json
-from typing import literal
+from typing import Literal
 import streamlit as st
 from dotenv import load_dotenv
 from openai import OpenAI
