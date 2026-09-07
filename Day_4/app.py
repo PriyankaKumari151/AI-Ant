@@ -1,9 +1,10 @@
 import os
 import json
+from typing import literal
 import streamlit as st
 from dotenv import load_dotenv
 from openai import OpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 #Load local env variables
 load_dotenv()
@@ -25,8 +26,8 @@ client = OpenAI(
 #1. Define Pydantic Output Schema
 class CustomerLead(BaseModel):
     client_name: str = Field(description="Full name of the client or company")
-    budget_usd: float = Field(description="Estimated budget in USD. Return 0.0 if not specified")
-    urgency: str = Field(description="Priority level: 'High', 'Medium' or 'Low'")
+    budget_usd: float = Field(ge=0, description="Estimated budget in USD. Return 0.0 if not specified")
+    urgency: Literal["High","Medium","Low"] = Field(description="Priority level strictly limited to 'High', 'Medium' or 'Low'")
     requested_services: list[str] = Field(description="List of requested features or services")
 
 #Page Config
@@ -100,7 +101,11 @@ if st.button("⚡Extract Structured Lead", type="primary"):
                 with st.expander("🔍 View Raw Validated JSON"):
                     st.json(validated_lead.model_dump())
             
+            except validationError as ve:
+                st.error(f"⚠️ AI Output Schema Violation")
+                st.code(str(ve), language="json")
             except Exception as e:
-                st.error(f"Failed to process or validate output: {e}")
+                #Triggered for API Keys, network errors, or timeout issues
+                st.error(f"System Error: {e}")
 
                 
